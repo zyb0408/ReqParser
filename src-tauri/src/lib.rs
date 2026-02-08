@@ -1,14 +1,68 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+mod clipboard;
+mod detector;
+mod error;
+mod models;
+mod parser;
+
+use std::sync::atomic::Ordering;
+use std::sync::Arc;
+
+use tauri::State;
+
+use clipboard::ClipboardWatcherState;
+use error::AppError;
+use models::ParseResult;
+
+/// 解析 HTTP 文本，返回结构化结果。
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
+fn parse_text(raw_text: String) -> Result<ParseResult, AppError> {
+    if raw_text.trim().is_empty() {
+        return Err(AppError::ParseError("Input text is empty".to_string()));
+    }
+    Ok(parser::parse_http_text(&raw_text))
+}
+
+/// 检测文本是否像 HTTP 数据。
+#[tauri::command]
+fn check_http_like(text: String) -> bool {
+    detector::is_http_like(&text)
+}
+
+/// 开关剪贴板监听。传入 enabled 强制设置，不传则切换。
+#[tauri::command]
+fn toggle_clipboard_watcher(
+    state: State<'_, Arc<ClipboardWatcherState>>,
+    enabled: Option<bool>,
+) -> bool {
+    let new_value = enabled.unwrap_or_else(|| !state.enabled.load(Ordering::Relaxed));
+    state.enabled.store(new_value, Ordering::Relaxed);
+    new_value
+}
+
+/// 获取剪贴板监听状态。
+#[tauri::command]
+fn get_clipboard_watcher_status(state: State<'_, Arc<ClipboardWatcherState>>) -> bool {
+    state.enabled.load(Ordering::Relaxed)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let watcher_state = Arc::new(ClipboardWatcherState::default());
+
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![greet])
+        .manage(watcher_state.clone())
+        .setup(move |app| {
+            let app_handle = app.handle().clone();
+            clipboard::start_clipboard_watcher(app_handle, watcher_state.clone());
+            Ok(())
+        })
+        .invoke_handler(tauri::generate_handler![
+            parse_text,
+            check_http_like,
+            toggle_clipboard_watcher,
+            get_clipboard_watcher_status,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

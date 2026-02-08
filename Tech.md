@@ -8,7 +8,7 @@
 | **容器外壳** | **Tauri 2.0** | 内存占用极低（约 20MB），安装包小（< 5MB），完美支持跨平台，安全性高。 |
 | **后端逻辑** | **Rust** | 处理高性能正则匹配、系统剪贴板监听（Clipboard Observer）及跨平台系统调用。 |
 | **前端框架** | **React + TypeScript** | 极速构建，响应式数据绑定适合展示复杂的 K-V 树形结构。 |
-| **UI 样式** | **Tailwind CSS + Shadcn Vue** | 快速实现现代感、开发者友好的 UI 界面。 |
+| **UI 样式** | **Tailwind CSS + Shadcn UI** | 快速实现现代感、开发者友好的 UI 界面。 |
 | **数据持久化** | **Local Storage / JSON File** | 仅用于存储历史记录及用户自定义词典，无需数据库。 |
 
 ---
