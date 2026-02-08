@@ -1,8 +1,8 @@
 use regex::Regex;
 use std::sync::LazyLock;
-use url::Url;
 
 use crate::models::{HttpContentType, ParseNode, ParseResult};
+use crate::parse_utils;
 
 static RE_REQUEST_LINE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
@@ -73,18 +73,20 @@ pub fn parse_http_text(raw: &str) -> ParseResult {
             RE_HEADER_LINE.captures(line).map(|caps| {
                 let key = caps[1].to_string();
                 let value = caps[2].to_string();
-                let children = parse_header_value_children(&key, &value);
+                let children = parse_utils::parse_header_value_children(&key, &value);
                 ParseNode {
                     key,
                     value,
                     children,
                     description: None,
+                    decoded_value: None,
+                    value_type: None,
                 }
             })
         })
         .collect();
 
-    let query_params = url_str.as_ref().and_then(|u| parse_query_params(u));
+    let query_params = url_str.as_ref().and_then(|u| parse_utils::parse_query_params(u));
 
     let body = if body_lines.is_empty() {
         None
@@ -103,71 +105,6 @@ pub fn parse_http_text(raw: &str) -> ParseResult {
         query_params,
         body,
         raw_text,
-    }
-}
-
-/// 从 URL 或路径字符串中解析查询参数。
-fn parse_query_params(url_or_path: &str) -> Option<Vec<ParseNode>> {
-    let parsed = Url::parse(url_or_path)
-        .or_else(|_| Url::parse(&format!("http://dummy{}", url_or_path)));
-
-    match parsed {
-        Ok(url) => {
-            let params: Vec<ParseNode> = url
-                .query_pairs()
-                .map(|(k, v)| ParseNode {
-                    key: k.into_owned(),
-                    value: v.into_owned(),
-                    children: None,
-                    description: None,
-                })
-                .collect();
-            if params.is_empty() {
-                None
-            } else {
-                Some(params)
-            }
-        }
-        Err(_) => None,
-    }
-}
-
-/// Phase 1 的 Header Value 子解析。
-/// 处理 Cookie 风格的 "k1=v1; k2=v2" 模式。
-fn parse_header_value_children(key: &str, value: &str) -> Option<Vec<ParseNode>> {
-    let lower_key = key.to_lowercase();
-
-    if lower_key == "cookie" || lower_key == "set-cookie" {
-        let children: Vec<ParseNode> = value
-            .split(';')
-            .map(|pair| pair.trim())
-            .filter(|pair| !pair.is_empty())
-            .map(|pair| {
-                if let Some((k, v)) = pair.split_once('=') {
-                    ParseNode {
-                        key: k.trim().to_string(),
-                        value: v.trim().to_string(),
-                        children: None,
-                        description: None,
-                    }
-                } else {
-                    // Cookie 标志如 HttpOnly, Secure
-                    ParseNode {
-                        key: pair.to_string(),
-                        value: String::new(),
-                        children: None,
-                        description: None,
-                    }
-                }
-            })
-            .collect();
-        if children.is_empty() {
-            None
-        } else {
-            Some(children)
-        }
-    } else {
-        None
     }
 }
 

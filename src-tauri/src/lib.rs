@@ -1,9 +1,11 @@
 mod clipboard;
 mod curl_parser;
+mod decoder;
 mod detector;
 mod error;
 mod fetch_parser;
 mod models;
+mod parse_utils;
 mod parser;
 
 use std::sync::atomic::Ordering;
@@ -22,12 +24,13 @@ fn parse_text(raw_text: String) -> Result<ParseResult, AppError> {
     if raw_text.trim().is_empty() {
         return Err(AppError::ParseError("Input text is empty".to_string()));
     }
-    let result = match detector::detect_input_format(&raw_text) {
+    let mut result = match detector::detect_input_format(&raw_text) {
         InputFormat::Curl => curl_parser::parse_curl(&raw_text),
         InputFormat::Fetch => fetch_parser::parse_fetch(&raw_text),
         InputFormat::RawHttp => parser::parse_http_text(&raw_text),
         InputFormat::Unknown => parser::parse_http_text(&raw_text),
     };
+    decoder::apply_recursive_decode(&mut result);
     Ok(result)
 }
 

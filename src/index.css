@@ -47,6 +47,36 @@
 
 :root {
   --radius: 0.625rem;
+
+  /* Value type colors */
+  --type-jwt: oklch(0.55 0.2 300);
+  --type-jwt-bg: oklch(0.95 0.03 300);
+  --type-base64: oklch(0.55 0.15 240);
+  --type-base64-bg: oklch(0.95 0.03 240);
+  --type-timestamp: oklch(0.55 0.15 150);
+  --type-timestamp-bg: oklch(0.95 0.03 150);
+  --type-json: oklch(0.6 0.2 75);
+  --type-json-bg: oklch(0.95 0.04 75);
+  --type-url: oklch(0.55 0.15 200);
+  --type-url-bg: oklch(0.95 0.03 200);
+  --type-encoded: oklch(0.6 0.2 30);
+  --type-encoded-bg: oklch(0.95 0.03 30);
+
+  /* Tree line */
+  --tree-line: oklch(0.7 0 0);
+
+  /* Status */
+  --status-active: oklch(0.65 0.2 150);
+  --status-inactive: oklch(0.7 0 0);
+
+  /* Syntax highlighting */
+  --syntax-key: oklch(0.55 0.2 300);
+  --syntax-string: oklch(0.55 0.15 150);
+  --syntax-number: oklch(0.6 0.2 75);
+  --syntax-boolean: oklch(0.55 0.15 240);
+  --syntax-null: oklch(0.6 0 0);
+  --syntax-bracket: oklch(0.5 0 0);
+
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -81,6 +111,31 @@
 }
 
 .dark {
+  --type-jwt: oklch(0.7 0.15 300);
+  --type-jwt-bg: oklch(0.25 0.05 300);
+  --type-base64: oklch(0.7 0.12 240);
+  --type-base64-bg: oklch(0.25 0.05 240);
+  --type-timestamp: oklch(0.7 0.12 150);
+  --type-timestamp-bg: oklch(0.25 0.05 150);
+  --type-json: oklch(0.75 0.15 75);
+  --type-json-bg: oklch(0.25 0.05 75);
+  --type-url: oklch(0.7 0.12 200);
+  --type-url-bg: oklch(0.25 0.05 200);
+  --type-encoded: oklch(0.75 0.15 30);
+  --type-encoded-bg: oklch(0.25 0.05 30);
+
+  --tree-line: oklch(0.4 0 0);
+
+  --status-active: oklch(0.7 0.18 150);
+  --status-inactive: oklch(0.4 0 0);
+
+  --syntax-key: oklch(0.75 0.15 300);
+  --syntax-string: oklch(0.7 0.12 150);
+  --syntax-number: oklch(0.75 0.15 75);
+  --syntax-boolean: oklch(0.7 0.12 240);
+  --syntax-null: oklch(0.5 0 0);
+  --syntax-bracket: oklch(0.6 0 0);
+
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.205 0 0);
@@ -120,5 +175,14 @@
   }
   body {
     @apply bg-background text-foreground;
+    overflow: hidden;
   }
 }
+
+/* JSON syntax highlighting */
+.syntax-key { color: var(--syntax-key); }
+.syntax-string { color: var(--syntax-string); }
+.syntax-number { color: var(--syntax-number); }
+.syntax-boolean { color: var(--syntax-boolean); }
+.syntax-null { color: var(--syntax-null); }
+.syntax-bracket { color: var(--syntax-bracket); }

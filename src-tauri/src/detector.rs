@@ -12,7 +12,7 @@ static RE_RESPONSE_LINE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"^HTTP/\d\.\d\s+\d{3}\s+.*$").unwrap());
 
 static RE_HEADER_LINE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^[\w-]+:\s*.+$").unwrap());
+    LazyLock::new(|| Regex::new(r"^[\w-]+:\s*.*$").unwrap());
 
 /// 输入格式类型
 #[derive(Debug, Clone, PartialEq)]

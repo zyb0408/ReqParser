@@ -10,7 +10,15 @@
       "Bash(pnpm approve-builds:*)",
       "Bash(pnpm config set:*)",
       "Bash(pnpm install:*)",
-      "Bash(pnpm ls:*)"
+      "Bash(pnpm ls:*)",
+      "Bash(grep:*)",
+      "Bash(npx tsc:*)",
+      "Bash(node:*)",
+      "Bash(cargo clippy:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(npx vite build:*)",
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm build:*)"
     ]
   }
 }

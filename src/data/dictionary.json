@@ -1,0 +1,921 @@
+{
+  "headers": {
+    "Cache-Control": {
+      "name": "Cache-Control",
+      "desc": "控制缓存的行为，指定请求和响应遵循的缓存机制",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cache-Control",
+      "request": true,
+      "response": true,
+      "security": false,
+      "values": {
+        "no-cache": "强制发送请求给服务器进行验证",
+        "no-store": "不缓存任何内容",
+        "max-age": "资源能够被缓存的最长时间（秒）",
+        "public": "响应可被任何缓存存储",
+        "private": "响应仅可被浏览器缓存",
+        "must-revalidate": "缓存过期后必须向源服务器验证",
+        "no-transform": "不得对资源进行转换或转码",
+        "s-maxage": "共享缓存的最长时间（秒），覆盖 max-age"
+      }
+    },
+    "Connection": {
+      "name": "Connection",
+      "desc": "决定当前事务完成后，网络连接是否保持打开状态",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Connection",
+      "request": true,
+      "response": true,
+      "security": false,
+      "values": {
+        "keep-alive": "保持网络连接打开",
+        "close": "事务完成后关闭连接"
+      }
+    },
+    "Date": {
+      "name": "Date",
+      "desc": "包含消息创建时的日期和时间",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Date",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "Keep-Alive": {
+      "name": "Keep-Alive",
+      "desc": "允许发送方提示连接的持久性以及空闲连接超时时间",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Keep-Alive",
+      "request": true,
+      "response": true,
+      "security": false,
+      "values": {
+        "timeout": "空闲连接需要保持打开的最小时间（秒）",
+        "max": "连接关闭前可发送的最大请求数"
+      }
+    },
+    "Pragma": {
+      "name": "Pragma",
+      "desc": "HTTP/1.0 的遗留缓存控制头，等同于 Cache-Control: no-cache",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Pragma",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "no-cache": "强制缓存向服务器提交请求进行验证"
+      }
+    },
+    "Transfer-Encoding": {
+      "name": "Transfer-Encoding",
+      "desc": "指定将消息主体安全传输给用户所使用的编码形式",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Transfer-Encoding",
+      "request": false,
+      "response": true,
+      "security": false,
+      "values": {
+        "chunked": "数据以分块形式发送",
+        "compress": "使用 LZW 压缩算法",
+        "deflate": "使用 zlib 结构的 deflate 压缩算法",
+        "gzip": "使用 gzip 压缩算法"
+      }
+    },
+    "Upgrade": {
+      "name": "Upgrade",
+      "desc": "请求服务器升级到另一个协议",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Upgrade",
+      "request": true,
+      "response": true,
+      "security": false,
+      "values": {
+        "websocket": "升级到 WebSocket 协议",
+        "h2c": "升级到 HTTP/2 明文协议"
+      }
+    },
+    "Via": {
+      "name": "Via",
+      "desc": "由代理服务器添加，用于跟踪消息转发路径",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Via",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "Warning": {
+      "name": "Warning",
+      "desc": "包含关于消息状态可能存在的问题的附加信息（已弃用）",
+      "category": "general",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Warning",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "Accept": {
+      "name": "Accept",
+      "desc": "告知服务器客户端能够处理的内容类型（MIME 类型）",
+      "category": "content-negotiation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "text/html": "HTML 文档",
+        "application/json": "JSON 数据",
+        "application/xml": "XML 数据",
+        "text/plain": "纯文本",
+        "*/*": "接受所有类型"
+      }
+    },
+    "Accept-Charset": {
+      "name": "Accept-Charset",
+      "desc": "告知服务器客户端能够理解的字符编码（已弃用，现代浏览器不再发送）",
+      "category": "content-negotiation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "utf-8": "Unicode 字符编码",
+        "iso-8859-1": "Latin-1 字符编码"
+      }
+    },
+    "Accept-Encoding": {
+      "name": "Accept-Encoding",
+      "desc": "告知服务器客户端支持的内容编码（压缩算法）",
+      "category": "content-negotiation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "gzip": "gzip 压缩",
+        "deflate": "deflate 压缩",
+        "br": "Brotli 压缩",
+        "zstd": "Zstandard 压缩",
+        "identity": "不进行压缩"
+      }
+    },
+    "Accept-Language": {
+      "name": "Accept-Language",
+      "desc": "告知服务器客户端偏好的自然语言",
+      "category": "content-negotiation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "zh-CN": "简体中文",
+        "zh-TW": "繁体中文",
+        "en-US": "美式英语",
+        "en": "英语",
+        "ja": "日语"
+      }
+    },
+    "Authorization": {
+      "name": "Authorization",
+      "desc": "包含用于向服务器验证用户身份的凭据",
+      "category": "authentication",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Authorization",
+      "request": true,
+      "response": false,
+      "security": true,
+      "values": {
+        "Basic": "基本认证方案（Base64 编码的用户名:密码）",
+        "Bearer": "持有者令牌认证方案（常用于 OAuth 2.0）",
+        "Digest": "摘要认证方案"
+      }
+    },
+    "Cookie": {
+      "name": "Cookie",
+      "desc": "包含先前由服务器通过 Set-Cookie 头存储的 HTTP Cookie",
+      "category": "cookies",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cookie",
+      "request": true,
+      "response": false,
+      "security": true
+    },
+    "DNT": {
+      "name": "DNT",
+      "desc": "表示用户的跟踪偏好（Do Not Track，已弃用）",
+      "category": "privacy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/DNT",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "0": "用户允许跟踪",
+        "1": "用户不希望被跟踪",
+        "null": "用户未表明偏好"
+      }
+    },
+    "Expect": {
+      "name": "Expect",
+      "desc": "指示客户端需要服务器满足的期望条件",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Expect",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "100-continue": "客户端期望服务器返回 100 Continue 以继续发送请求体"
+      }
+    },
+    "From": {
+      "name": "From",
+      "desc": "包含发起请求的用户代理的用户电子邮件地址",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/From",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Host": {
+      "name": "Host",
+      "desc": "指定请求目标的服务器主机名和端口号（HTTP/1.1 唯一必需的请求头）",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Host",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "If-Match": {
+      "name": "If-Match",
+      "desc": "使请求成为条件请求，仅在给定的 ETag 匹配时才执行操作",
+      "category": "conditional",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-Match",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "If-Modified-Since": {
+      "name": "If-Modified-Since",
+      "desc": "使请求成为条件请求，仅在给定日期后资源被修改时才返回资源",
+      "category": "conditional",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-Modified-Since",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "If-None-Match": {
+      "name": "If-None-Match",
+      "desc": "使请求成为条件请求，仅在给定的 ETag 不匹配时才执行操作",
+      "category": "conditional",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-None-Match",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "If-Range": {
+      "name": "If-Range",
+      "desc": "使范围请求成为条件请求，仅在 ETag 或日期匹配时才返回范围内容",
+      "category": "conditional",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-Range",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "If-Unmodified-Since": {
+      "name": "If-Unmodified-Since",
+      "desc": "使请求成为条件请求，仅在给定日期后资源未被修改时才执行操作",
+      "category": "conditional",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/If-Unmodified-Since",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Origin": {
+      "name": "Origin",
+      "desc": "指示请求来源的协议、主机和端口，用于 CORS 和同源策略",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Origin",
+      "request": true,
+      "response": false,
+      "security": true
+    },
+    "Proxy-Authorization": {
+      "name": "Proxy-Authorization",
+      "desc": "包含用于向代理服务器验证用户身份的凭据",
+      "category": "authentication",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Proxy-Authorization",
+      "request": true,
+      "response": false,
+      "security": true
+    },
+    "Range": {
+      "name": "Range",
+      "desc": "指示服务器应返回文档的哪部分内容",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Range",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "bytes": "按字节范围请求，如 bytes=0-499"
+      }
+    },
+    "Referer": {
+      "name": "Referer",
+      "desc": "包含发出请求的页面的绝对或部分地址（注意：标准拼写错误保留）",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Referer",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "TE": {
+      "name": "TE",
+      "desc": "指定用户代理愿意接受的传输编码",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/TE",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "trailers": "愿意接受分块传输中的 trailer 字段",
+        "compress": "接受 LZW 压缩",
+        "deflate": "接受 deflate 压缩",
+        "gzip": "接受 gzip 压缩"
+      }
+    },
+    "User-Agent": {
+      "name": "User-Agent",
+      "desc": "标识发起请求的用户代理软件的应用类型、操作系统、供应商和版本",
+      "category": "request",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/User-Agent",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Accept-Ranges": {
+      "name": "Accept-Ranges",
+      "desc": "指示服务器是否支持范围请求以及支持的范围单位",
+      "category": "response",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Ranges",
+      "request": false,
+      "response": true,
+      "security": false,
+      "values": {
+        "bytes": "支持按字节的范围请求",
+        "none": "不支持范围请求"
+      }
+    },
+    "Age": {
+      "name": "Age",
+      "desc": "对象在代理缓存中存储的时间（秒）",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Age",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Content-Disposition": {
+      "name": "Content-Disposition",
+      "desc": "指示响应内容是内联显示还是作为附件下载",
+      "category": "response",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Disposition",
+      "request": false,
+      "response": true,
+      "security": false,
+      "values": {
+        "inline": "内容以内联方式显示",
+        "attachment": "内容应作为附件下载",
+        "form-data": "用于 multipart/form-data 表单提交"
+      }
+    },
+    "Content-Encoding": {
+      "name": "Content-Encoding",
+      "desc": "指定应用于响应体的编码方式（压缩算法）",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Encoding",
+      "request": false,
+      "response": true,
+      "security": false,
+      "values": {
+        "gzip": "gzip 压缩编码",
+        "deflate": "deflate 压缩编码",
+        "br": "Brotli 压缩编码",
+        "zstd": "Zstandard 压缩编码",
+        "identity": "未使用编码"
+      }
+    },
+    "Content-Language": {
+      "name": "Content-Language",
+      "desc": "描述面向受众的语言，用于区分用户的首选语言",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Language",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "Content-Length": {
+      "name": "Content-Length",
+      "desc": "指示消息主体的大小（以字节为单位）",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Length",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "Content-Location": {
+      "name": "Content-Location",
+      "desc": "指示返回的数据的替代位置",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Location",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Content-Range": {
+      "name": "Content-Range",
+      "desc": "指示部分消息在完整消息主体中的位置",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Range",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Content-Type": {
+      "name": "Content-Type",
+      "desc": "指示资源的 MIME 类型",
+      "category": "representation",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Type",
+      "request": true,
+      "response": true,
+      "security": false,
+      "values": {
+        "text/html": "HTML 文档",
+        "text/plain": "纯文本",
+        "text/css": "CSS 样式表",
+        "text/javascript": "JavaScript 代码",
+        "application/json": "JSON 数据",
+        "application/xml": "XML 数据",
+        "application/x-www-form-urlencoded": "URL 编码的表单数据",
+        "multipart/form-data": "多部分表单数据（文件上传）",
+        "application/octet-stream": "二进制数据流",
+        "image/png": "PNG 图片",
+        "image/jpeg": "JPEG 图片"
+      }
+    },
+    "ETag": {
+      "name": "ETag",
+      "desc": "资源的特定版本标识符，用于缓存验证和条件请求",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/ETag",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Expires": {
+      "name": "Expires",
+      "desc": "指定响应过期的日期/时间，过期后被认为是陈旧的",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Expires",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Last-Modified": {
+      "name": "Last-Modified",
+      "desc": "包含源服务器认为资源最后修改的日期和时间",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Last-Modified",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Location": {
+      "name": "Location",
+      "desc": "指示重定向的目标 URL",
+      "category": "response",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Location",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Retry-After": {
+      "name": "Retry-After",
+      "desc": "告知客户端在多长时间后可以再次发送请求",
+      "category": "response",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Retry-After",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Server": {
+      "name": "Server",
+      "desc": "包含处理请求的源服务器所使用的软件信息",
+      "category": "response",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Server",
+      "request": false,
+      "response": true,
+      "security": false
+    },
+    "Set-Cookie": {
+      "name": "Set-Cookie",
+      "desc": "由服务器发送，用于在客户端设置 Cookie",
+      "category": "cookies",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "HttpOnly": "禁止 JavaScript 访问 Cookie，防范 XSS 攻击",
+        "Secure": "仅通过 HTTPS 传输 Cookie",
+        "SameSite=Strict": "仅在同站请求时发送 Cookie",
+        "SameSite=Lax": "导航到目标网站时发送 Cookie（默认值）",
+        "SameSite=None": "跨站请求时也发送 Cookie（需配合 Secure）",
+        "Path": "指定 Cookie 的作用路径",
+        "Domain": "指定 Cookie 的作用域名",
+        "Max-Age": "Cookie 的最大存活时间（秒）",
+        "Expires": "Cookie 的过期时间"
+      }
+    },
+    "Vary": {
+      "name": "Vary",
+      "desc": "确定如何匹配请求头以决定是否可以使用缓存的响应",
+      "category": "caching",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Vary",
+      "request": false,
+      "response": true,
+      "security": false,
+      "values": {
+        "*": "每个请求都被视为唯一，不使用缓存",
+        "Accept-Encoding": "根据客户端支持的编码来决定缓存",
+        "User-Agent": "根据用户代理来决定缓存",
+        "Origin": "根据请求来源来决定缓存"
+      }
+    },
+    "WWW-Authenticate": {
+      "name": "WWW-Authenticate",
+      "desc": "定义用于访问资源的认证方法（与 401 状态码一起使用）",
+      "category": "authentication",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/WWW-Authenticate",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "Basic": "基本认证方案",
+        "Bearer": "持有者令牌认证方案",
+        "Digest": "摘要认证方案",
+        "Negotiate": "SPNEGO/Kerberos 认证方案"
+      }
+    },
+    "Content-Security-Policy": {
+      "name": "Content-Security-Policy",
+      "desc": "控制用户代理可以为页面加载的资源，防范 XSS 和数据注入攻击",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Security-Policy",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "default-src": "为其他 CSP 指令提供默认值",
+        "script-src": "限制 JavaScript 的来源",
+        "style-src": "限制 CSS 样式的来源",
+        "img-src": "限制图片的来源",
+        "connect-src": "限制可以通过脚本接口加载的 URL",
+        "font-src": "限制字体的来源",
+        "frame-src": "限制可嵌入框架的来源",
+        "object-src": "限制 <object>、<embed>、<applet> 元素的来源",
+        "media-src": "限制音频和视频的来源",
+        "report-uri": "指定浏览器报告违规的 URL"
+      }
+    },
+    "Strict-Transport-Security": {
+      "name": "Strict-Transport-Security",
+      "desc": "告知浏览器只能通过 HTTPS 访问当前站点（HSTS）",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Strict-Transport-Security",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "max-age": "浏览器记住仅使用 HTTPS 访问的时间（秒）",
+        "includeSubDomains": "规则适用于所有子域名",
+        "preload": "允许将站点加入浏览器的 HSTS 预加载列表"
+      }
+    },
+    "X-Content-Type-Options": {
+      "name": "X-Content-Type-Options",
+      "desc": "阻止浏览器对响应进行 MIME 类型嗅探，防止内容类型混淆攻击",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/X-Content-Type-Options",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "nosniff": "阻止浏览器嗅探 MIME 类型"
+      }
+    },
+    "X-Frame-Options": {
+      "name": "X-Frame-Options",
+      "desc": "指示浏览器是否允许页面在 frame、iframe、embed 或 object 中展示，防范点击劫持",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/X-Frame-Options",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "DENY": "页面不允许在任何框架中展示",
+        "SAMEORIGIN": "仅允许同源页面在框架中展示"
+      }
+    },
+    "X-XSS-Protection": {
+      "name": "X-XSS-Protection",
+      "desc": "启用浏览器内置的 XSS 过滤器（已弃用，建议使用 CSP 替代）",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/X-XSS-Protection",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "0": "禁用 XSS 过滤",
+        "1": "启用 XSS 过滤",
+        "1; mode=block": "启用 XSS 过滤，检测到攻击时阻止页面渲染"
+      }
+    },
+    "Access-Control-Allow-Origin": {
+      "name": "Access-Control-Allow-Origin",
+      "desc": "指示响应是否可以与来自给定来源的请求代码共享",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Origin",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "*": "允许任何来源访问（不建议用于生产环境）",
+        "null": "来源为 null（不推荐使用）"
+      }
+    },
+    "Access-Control-Allow-Methods": {
+      "name": "Access-Control-Allow-Methods",
+      "desc": "指示预检请求的响应中，哪些 HTTP 方法允许访问资源",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Methods",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "GET": "允许 GET 请求",
+        "POST": "允许 POST 请求",
+        "PUT": "允许 PUT 请求",
+        "DELETE": "允许 DELETE 请求",
+        "PATCH": "允许 PATCH 请求",
+        "OPTIONS": "允许 OPTIONS 请求",
+        "*": "允许所有方法"
+      }
+    },
+    "Access-Control-Allow-Headers": {
+      "name": "Access-Control-Allow-Headers",
+      "desc": "指示预检请求的响应中，哪些 HTTP 头可以在实际请求中使用",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Headers",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "*": "允许所有头",
+        "Content-Type": "允许 Content-Type 头",
+        "Authorization": "允许 Authorization 头"
+      }
+    },
+    "Access-Control-Expose-Headers": {
+      "name": "Access-Control-Expose-Headers",
+      "desc": "指示哪些响应头可以暴露给前端 JavaScript 代码",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Expose-Headers",
+      "request": false,
+      "response": true,
+      "security": true
+    },
+    "Access-Control-Max-Age": {
+      "name": "Access-Control-Max-Age",
+      "desc": "指示预检请求的结果可以被缓存多长时间（秒）",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Max-Age",
+      "request": false,
+      "response": true,
+      "security": true
+    },
+    "X-Request-Id": {
+      "name": "X-Request-Id",
+      "desc": "用于标识单个 HTTP 请求的唯一标识符，便于请求追踪和调试",
+      "category": "custom",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers",
+      "request": true,
+      "response": true,
+      "security": false
+    },
+    "X-Forwarded-For": {
+      "name": "X-Forwarded-For",
+      "desc": "标识通过代理或负载均衡器连接到 Web 服务器的客户端的原始 IP 地址",
+      "category": "proxy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/X-Forwarded-For",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "X-Forwarded-Proto": {
+      "name": "X-Forwarded-Proto",
+      "desc": "标识客户端与代理或负载均衡器之间使用的协议（HTTP 或 HTTPS）",
+      "category": "proxy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "http": "客户端使用 HTTP 协议",
+        "https": "客户端使用 HTTPS 协议"
+      }
+    },
+    "X-Real-IP": {
+      "name": "X-Real-IP",
+      "desc": "由反向代理（如 Nginx）设置，标识客户端的真实 IP 地址",
+      "category": "proxy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Referrer-Policy": {
+      "name": "Referrer-Policy",
+      "desc": "控制请求中 Referer 头携带多少来源信息",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Referrer-Policy",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "no-referrer": "不发送 Referer 头",
+        "no-referrer-when-downgrade": "HTTPS 到 HTTP 时不发送",
+        "origin": "仅发送来源的域名",
+        "origin-when-cross-origin": "同源时发送完整 URL，跨源时仅发送域名",
+        "same-origin": "仅在同源请求时发送 Referer",
+        "strict-origin": "仅发送域名，且 HTTPS 到 HTTP 时不发送",
+        "strict-origin-when-cross-origin": "同源时发送完整 URL，跨源时仅发送域名（默认值）",
+        "unsafe-url": "始终发送完整 URL（不安全）"
+      }
+    },
+    "Permissions-Policy": {
+      "name": "Permissions-Policy",
+      "desc": "允许或拒绝在浏览器中使用特定功能和 API（原 Feature-Policy）",
+      "category": "security",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Permissions-Policy",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "camera": "控制摄像头访问权限",
+        "microphone": "控制麦克风访问权限",
+        "geolocation": "控制地理位置访问权限",
+        "fullscreen": "控制全屏 API 使用权限"
+      }
+    },
+    "Access-Control-Allow-Credentials": {
+      "name": "Access-Control-Allow-Credentials",
+      "desc": "指示当请求的凭证模式为 include 时，是否将响应暴露给前端 JavaScript",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Allow-Credentials",
+      "request": false,
+      "response": true,
+      "security": true,
+      "values": {
+        "true": "允许前端代码访问带凭证请求的响应"
+      }
+    },
+    "Access-Control-Request-Method": {
+      "name": "Access-Control-Request-Method",
+      "desc": "用于预检请求中，告知服务器实际请求将使用的 HTTP 方法",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Request-Method",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Access-Control-Request-Headers": {
+      "name": "Access-Control-Request-Headers",
+      "desc": "用于预检请求中，告知服务器实际请求将携带的 HTTP 头",
+      "category": "cors",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Access-Control-Request-Headers",
+      "request": true,
+      "response": false,
+      "security": false
+    },
+    "Forwarded": {
+      "name": "Forwarded",
+      "desc": "包含代理服务器添加的客户端信息（标准化替代 X-Forwarded-* 头）",
+      "category": "proxy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Forwarded",
+      "request": true,
+      "response": false,
+      "security": false,
+      "values": {
+        "for": "标识发起请求的客户端",
+        "by": "标识接收请求的代理",
+        "host": "客户端请求的原始 Host 头",
+        "proto": "客户端使用的协议"
+      }
+    },
+    "X-Forwarded-Host": {
+      "name": "X-Forwarded-Host",
+      "desc": "标识客户端在 Host 请求头中发送的原始主机名",
+      "category": "proxy",
+      "mdn": "https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers",
+      "request": true,
+      "response": false,
+      "security": false
+    }
+  },
+  "securityAdvisories": [
+    {
+      "id": "cookie-no-httponly",
+      "header": "Set-Cookie",
+      "condition": "Cookie 未设置 HttpOnly 属性",
+      "risk": "high",
+      "description": "Cookie 可被 JavaScript 通过 document.cookie 访问，存在 XSS 攻击窃取 Cookie 的风险",
+      "recommendation": "为敏感 Cookie（如会话 Cookie）添加 HttpOnly 属性"
+    },
+    {
+      "id": "cookie-no-secure",
+      "header": "Set-Cookie",
+      "condition": "Cookie 未设置 Secure 属性",
+      "risk": "high",
+      "description": "Cookie 可通过不加密的 HTTP 连接传输，存在中间人攻击窃取 Cookie 的风险",
+      "recommendation": "为所有敏感 Cookie 添加 Secure 属性，确保仅通过 HTTPS 传输"
+    },
+    {
+      "id": "cookie-no-samesite",
+      "header": "Set-Cookie",
+      "condition": "Cookie 未设置 SameSite 属性",
+      "risk": "medium",
+      "description": "Cookie 可能在跨站请求中被发送，存在 CSRF 攻击风险",
+      "recommendation": "设置 SameSite=Strict 或 SameSite=Lax 以防范 CSRF 攻击"
+    },
+    {
+      "id": "no-csp",
+      "header": "Content-Security-Policy",
+      "condition": "响应中缺少 Content-Security-Policy 头",
+      "risk": "high",
+      "description": "没有 CSP 策略，页面容易受到 XSS 和数据注入攻击",
+      "recommendation": "配置 Content-Security-Policy 限制资源加载来源"
+    },
+    {
+      "id": "no-xfo",
+      "header": "X-Frame-Options",
+      "condition": "响应中缺少 X-Frame-Options 头",
+      "risk": "medium",
+      "description": "页面可被嵌入到 iframe 中，存在点击劫持攻击风险",
+      "recommendation": "设置 X-Frame-Options: DENY 或 SAMEORIGIN"
+    },
+    {
+      "id": "no-hsts",
+      "header": "Strict-Transport-Security",
+      "condition": "响应中缺少 Strict-Transport-Security 头",
+      "risk": "medium",
+      "description": "用户可能通过 HTTP 访问站点，存在 SSL 剥离攻击风险",
+      "recommendation": "设置 Strict-Transport-Security: max-age=31536000; includeSubDomains"
+    },
+    {
+      "id": "no-xcto",
+      "header": "X-Content-Type-Options",
+      "condition": "响应中缺少 X-Content-Type-Options 头",
+      "risk": "low",
+      "description": "浏览器可能对响应内容进行 MIME 类型嗅探，导致内容类型混淆",
+      "recommendation": "设置 X-Content-Type-Options: nosniff"
+    },
+    {
+      "id": "cors-wildcard",
+      "header": "Access-Control-Allow-Origin",
+      "condition": "Access-Control-Allow-Origin 设置为通配符 *",
+      "risk": "medium",
+      "description": "允许任何来源的网页访问此资源，可能导致敏感数据泄露",
+      "recommendation": "指定具体的允许来源域名，避免使用通配符"
+    },
+    {
+      "id": "server-info-leak",
+      "header": "Server",
+      "condition": "Server 头暴露了详细的服务器版本信息",
+      "risk": "low",
+      "description": "暴露服务器软件及版本信息可帮助攻击者寻找已知漏洞",
+      "recommendation": "移除或简化 Server 头，不暴露详细版本号"
+    },
+    {
+      "id": "auth-basic-insecure",
+      "header": "Authorization",
+      "condition": "使用 Basic 认证方案",
+      "risk": "medium",
+      "description": "Basic 认证仅使用 Base64 编码（非加密），凭据容易被截获",
+      "recommendation": "确保仅在 HTTPS 连接上使用 Basic 认证，或改用 Bearer Token"
+    },
+    {
+      "id": "no-referrer-policy",
+      "header": "Referrer-Policy",
+      "condition": "响应中缺少 Referrer-Policy 头",
+      "risk": "low",
+      "description": "浏览器可能在请求中发送完整的 URL 作为 Referer，可能泄露敏感路径信息",
+      "recommendation": "设置 Referrer-Policy: strict-origin-when-cross-origin"
+    }
+  ]
+}

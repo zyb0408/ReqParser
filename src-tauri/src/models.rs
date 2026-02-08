@@ -11,6 +11,10 @@ pub struct ParseNode {
     pub children: Option<Vec<ParseNode>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub decoded_value: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub value_type: Option<String>,
 }
 
 /// 检测到的 HTTP 内容类型

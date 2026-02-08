@@ -1,7 +1,7 @@
 use serde::Serialize;
 
 #[derive(Debug, thiserror::Error)]
-#[allow(dead_code)]
+#[allow(dead_code, clippy::enum_variant_names)]
 pub enum AppError {
     #[error("Parse error: {0}")]
     ParseError(String),

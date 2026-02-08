@@ -1,6 +1,5 @@
-use url::Url;
-
 use crate::models::{HttpContentType, ParseNode, ParseResult};
+use crate::parse_utils;
 
 /// 解析浏览器 DevTools "Copy as fetch" 格式的文本。
 pub fn parse_fetch(input: &str) -> ParseResult {
@@ -39,12 +38,14 @@ pub fn parse_fetch(input: &str) -> ParseResult {
             obj.iter()
                 .map(|(key, val)| {
                     let value = val.as_str().unwrap_or("").to_string();
-                    let children = parse_cookie_children(key, &value);
+                    let children = parse_utils::parse_header_value_children(key, &value);
                     ParseNode {
                         key: key.clone(),
                         value,
                         children,
                         description: None,
+                        decoded_value: None,
+                        value_type: None,
                     }
                 })
                 .collect::<Vec<_>>()
@@ -67,7 +68,7 @@ pub fn parse_fetch(input: &str) -> ParseResult {
         });
 
     // 解析 URL query params
-    let query_params = parse_query_params(&url_str);
+    let query_params = parse_utils::parse_query_params(&url_str);
 
     ParseResult {
         content_type: HttpContentType::Request,
@@ -135,21 +136,20 @@ fn extract_quoted_string(input: &str) -> String {
             .to_string();
     }
 
-    let quote_char = trimmed.as_bytes()[0];
-    let bytes = trimmed.as_bytes();
-    let mut i = 1;
+    let quote_char = trimmed.chars().next().unwrap();
+    let mut chars = trimmed.chars();
+    chars.next(); // consume opening quote
     let mut result = String::new();
 
-    while i < bytes.len() {
-        if bytes[i] == b'\\' && i + 1 < bytes.len() {
-            // 转义字符
-            result.push(bytes[i + 1] as char);
-            i += 2;
-        } else if bytes[i] == quote_char {
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            if let Some(escaped) = chars.next() {
+                result.push(escaped);
+            }
+        } else if ch == quote_char {
             break;
         } else {
-            result.push(bytes[i] as char);
-            i += 1;
+            result.push(ch);
         }
     }
 
@@ -164,84 +164,22 @@ fn skip_quoted_string(input: &str) -> Option<&str> {
         return trimmed.find(',').map(|pos| &trimmed[pos..]);
     }
 
-    let quote_char = trimmed.as_bytes()[0];
-    let bytes = trimmed.as_bytes();
-    let mut i = 1;
+    let quote_char = trimmed.chars().next()?;
+    let mut byte_offset = quote_char.len_utf8(); // skip opening quote
 
-    while i < bytes.len() {
-        if bytes[i] == b'\\' && i + 1 < bytes.len() {
-            i += 2;
-        } else if bytes[i] == quote_char {
-            return Some(&trimmed[i + 1..]);
-        } else {
-            i += 1;
+    for ch in trimmed[byte_offset..].chars() {
+        byte_offset += ch.len_utf8();
+        if ch == '\\' {
+            // skip next char (escape)
+            if let Some(escaped) = trimmed[byte_offset..].chars().next() {
+                byte_offset += escaped.len_utf8();
+            }
+        } else if ch == quote_char {
+            return Some(&trimmed[byte_offset..]);
         }
     }
 
     None
-}
-
-/// Cookie 子解析：按 `;` 拆解 cookie 值。
-fn parse_cookie_children(key: &str, value: &str) -> Option<Vec<ParseNode>> {
-    let lower_key = key.to_lowercase();
-    if lower_key != "cookie" && lower_key != "set-cookie" {
-        return None;
-    }
-
-    let children: Vec<ParseNode> = value
-        .split(';')
-        .map(|pair| pair.trim())
-        .filter(|pair| !pair.is_empty())
-        .map(|pair| {
-            if let Some((k, v)) = pair.split_once('=') {
-                ParseNode {
-                    key: k.trim().to_string(),
-                    value: v.trim().to_string(),
-                    children: None,
-                    description: None,
-                }
-            } else {
-                ParseNode {
-                    key: pair.to_string(),
-                    value: String::new(),
-                    children: None,
-                    description: None,
-                }
-            }
-        })
-        .collect();
-
-    if children.is_empty() {
-        None
-    } else {
-        Some(children)
-    }
-}
-
-/// 从 URL 解析 query params。
-fn parse_query_params(url_str: &str) -> Option<Vec<ParseNode>> {
-    let parsed = Url::parse(url_str)
-        .or_else(|_| Url::parse(&format!("http://dummy{}", url_str)));
-
-    match parsed {
-        Ok(url) => {
-            let params: Vec<ParseNode> = url
-                .query_pairs()
-                .map(|(k, v)| ParseNode {
-                    key: k.into_owned(),
-                    value: v.into_owned(),
-                    children: None,
-                    description: None,
-                })
-                .collect();
-            if params.is_empty() {
-                None
-            } else {
-                Some(params)
-            }
-        }
-        Err(_) => None,
-    }
 }
 
 /// 返回一个空的 ParseResult（解析失败时使用）。

@@ -1,166 +1,135 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from "@/components/ui/resizable";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { AppProvider, useApp } from "@/lib/app-context";
+import { Toolbar } from "@/components/toolbar/Toolbar";
+import { StatusBar } from "@/components/layout/StatusBar";
+import { InputPanel } from "@/components/panels/InputPanel";
+import { ResultPanel } from "@/components/kv/ResultPanel";
+import { DetailPanel } from "@/components/detail/DetailPanel";
+import type { ParseResult } from "@/types";
 
-interface ParseNode {
-  key: string;
-  value: string;
-  children?: ParseNode[];
-  description?: string;
-}
+function AppContent() {
+  const { state, dispatch } = useApp();
 
-interface ParseResult {
-  contentType: string;
-  method?: string;
-  url?: string;
-  statusCode?: number;
-  statusText?: string;
-  protocol?: string;
-  headers: ParseNode[];
-  queryParams?: ParseNode[];
-  body?: string;
-  rawText: string;
-}
-
-function App() {
-  const [inputText, setInputText] = useState("");
-  const [parseResult, setParseResult] = useState<ParseResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [watcherEnabled, setWatcherEnabled] = useState(false);
-  const [clipboardEvent, setClipboardEvent] = useState<string | null>(null);
-
+  // Listen for clipboard HTTP detection events
   useEffect(() => {
-    const unlisten = listen<string>("clipboard-http-detected", (event) => {
-      setClipboardEvent(event.payload);
-      handleParse(event.payload);
+    const unlisten = listen<string>("clipboard-http-detected", async (event) => {
+      const text = event.payload;
+      dispatch({ type: "SET_RAW_TEXT", payload: text });
+      dispatch({ type: "PARSE_START" });
+      const start = performance.now();
+      try {
+        const result = await invoke<ParseResult>("parse_text", { rawText: text });
+        const time = Math.round(performance.now() - start);
+        dispatch({ type: "PARSE_SUCCESS", payload: result, time });
+      } catch (e) {
+        dispatch({ type: "PARSE_ERROR", payload: String(e) });
+      }
     });
 
     return () => {
       unlisten.then((fn) => fn());
     };
-  }, []);
+  }, [dispatch]);
 
-  async function handleParse(text?: string) {
-    const raw = text ?? inputText;
-    try {
-      setError(null);
-      const result = await invoke<ParseResult>("parse_text", {
-        rawText: raw,
-      });
-      setParseResult(result);
-    } catch (e) {
-      setError(String(e));
-      setParseResult(null);
-    }
-  }
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const isMeta = e.metaKey || e.ctrlKey;
 
-  async function handleToggleWatcher() {
-    try {
-      const newState = await invoke<boolean>("toggle_clipboard_watcher", {});
-      setWatcherEnabled(newState);
-    } catch (e) {
-      setError(String(e));
-    }
-  }
+      if (isMeta && e.key === "Enter") {
+        e.preventDefault();
+        if (state.rawText.trim()) {
+          (async () => {
+            dispatch({ type: "PARSE_START" });
+            const start = performance.now();
+            try {
+              const result = await invoke<ParseResult>("parse_text", {
+                rawText: state.rawText,
+              });
+              const time = Math.round(performance.now() - start);
+              dispatch({ type: "PARSE_SUCCESS", payload: result, time });
+            } catch (err) {
+              dispatch({ type: "PARSE_ERROR", payload: String(err) });
+            }
+          })();
+        }
+      }
+
+      if (e.key === "Escape") {
+        dispatch({ type: "CLEAR_SELECTION" });
+      }
+    };
+
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [state.rawText, dispatch]);
+
+  // Auto-dismiss error toast
+  useEffect(() => {
+    if (!state.parseError) return;
+    const timer = setTimeout(() => {
+      dispatch({ type: "CLEAR_ERROR" });
+    }, 5000);
+    return () => clearTimeout(timer);
+  }, [state.parseError, dispatch]);
 
   return (
-    <main className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">ReqParser - Phase 1 Test</h1>
+    <div className="flex flex-col h-screen">
+      <Toolbar />
 
-      {/* Clipboard Watcher */}
-      <div className="mb-4 flex items-center gap-3">
-        <button
-          onClick={handleToggleWatcher}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            watcherEnabled
-              ? "bg-green-600 text-white hover:bg-green-700"
-              : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          }`}
-        >
-          Clipboard Watcher: {watcherEnabled ? "ON" : "OFF"}
-        </button>
-        {clipboardEvent && (
-          <span className="text-sm text-muted-foreground truncate max-w-md">
-            Detected: {clipboardEvent.substring(0, 60)}...
-          </span>
-        )}
+      <div className="flex-1 min-h-0">
+        <ResizablePanelGroup orientation="horizontal">
+          {/* Left: Input Panel */}
+          <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
+            <InputPanel />
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Middle: KV Tree / Result Panel */}
+          <ResizablePanel defaultSize={50} minSize={30}>
+            <ResultPanel />
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          {/* Right: Detail Panel */}
+          <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
+            <DetailPanel />
+          </ResizablePanel>
+        </ResizablePanelGroup>
       </div>
 
-      {/* Input */}
-      <textarea
-        className="w-full h-48 border border-input bg-background p-3 font-mono text-sm rounded-md resize-y focus:outline-none focus:ring-2 focus:ring-ring"
-        value={inputText}
-        onChange={(e) => setInputText(e.target.value)}
-        placeholder="Paste HTTP request/response text here..."
-      />
-      <button
-        onClick={() => handleParse()}
-        className="mt-2 px-4 py-2 bg-primary text-primary-foreground rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-      >
-        Parse
-      </button>
+      <StatusBar />
 
-      {/* Error */}
-      {error && (
-        <p className="mt-3 text-sm text-destructive">Error: {error}</p>
-      )}
-
-      {/* Results */}
-      {parseResult && (
-        <div className="mt-4 space-y-3">
-          <div className="flex gap-4 text-sm">
-            <span className="font-semibold">
-              Type: {parseResult.contentType}
-            </span>
-            {parseResult.method && <span>Method: {parseResult.method}</span>}
-            {parseResult.statusCode && (
-              <span>
-                Status: {parseResult.statusCode} {parseResult.statusText}
-              </span>
-            )}
-            {parseResult.protocol && (
-              <span>Protocol: {parseResult.protocol}</span>
-            )}
-          </div>
-
-          {parseResult.url && (
-            <div className="text-sm">
-              <span className="font-semibold">URL: </span>
-              <code className="text-xs bg-muted px-1 py-0.5 rounded">
-                {parseResult.url}
-              </code>
-            </div>
-          )}
-
-          <div>
-            <h3 className="font-semibold text-sm mb-1">
-              Headers ({parseResult.headers.length})
-            </h3>
-            <pre className="bg-muted p-3 rounded-md text-xs overflow-auto max-h-64">
-              {JSON.stringify(parseResult.headers, null, 2)}
-            </pre>
-          </div>
-
-          {parseResult.queryParams && (
-            <div>
-              <h3 className="font-semibold text-sm mb-1">Query Params</h3>
-              <pre className="bg-muted p-3 rounded-md text-xs overflow-auto max-h-40">
-                {JSON.stringify(parseResult.queryParams, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {parseResult.body && (
-            <div>
-              <h3 className="font-semibold text-sm mb-1">Body</h3>
-              <pre className="bg-muted p-3 rounded-md text-xs overflow-auto max-h-40">
-                {parseResult.body}
-              </pre>
-            </div>
-          )}
+      {/* Error toast */}
+      {state.parseError && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm shadow-lg animate-in fade-in-0 slide-in-from-bottom-4">
+          {state.parseError}
         </div>
       )}
-    </main>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <ThemeProvider>
+      <TooltipProvider delayDuration={300}>
+        <AppProvider>
+          <AppContent />
+        </AppProvider>
+      </TooltipProvider>
+    </ThemeProvider>
   );
 }
 

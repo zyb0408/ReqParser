@@ -23,9 +23,15 @@ impl Default for ClipboardWatcherState {
 pub fn start_clipboard_watcher(app_handle: AppHandle, state: Arc<ClipboardWatcherState>) {
     tauri::async_runtime::spawn(async move {
         let mut last_clipboard = String::new();
+        let mut was_enabled = false;
 
         loop {
-            if state.enabled.load(Ordering::Relaxed) {
+            let is_enabled = state.enabled.load(Ordering::Relaxed);
+            if is_enabled {
+                if !was_enabled {
+                    // 刚重新启用，清空上次内容避免重复检测
+                    last_clipboard.clear();
+                }
                 // 使用 spawn_blocking 包装 arboard 操作，
                 // 因为 arboard::Clipboard 在 macOS 上不是 Send。
                 let result = tauri::async_runtime::spawn_blocking(|| {
@@ -40,6 +46,7 @@ pub fn start_clipboard_watcher(app_handle: AppHandle, state: Arc<ClipboardWatche
                     }
                 }
             }
+            was_enabled = is_enabled;
 
             tokio::time::sleep(Duration::from_millis(500)).await;
         }

@@ -1,6 +1,5 @@
-use url::Url;
-
 use crate::models::{HttpContentType, ParseNode, ParseResult};
+use crate::parse_utils;
 
 /// 将 cURL 命令文本解析为结构化的 ParseResult。
 pub fn parse_curl(input: &str) -> ParseResult {
@@ -38,12 +37,14 @@ pub fn parse_curl(input: &str) -> ParseResult {
             }
             "-b" | "--cookie" => {
                 if let Some(val) = tokens.get(i + 1) {
-                    let children = parse_cookie_children(val);
+                    let children = parse_utils::parse_cookie_children(val);
                     headers.push(ParseNode {
                         key: "Cookie".to_string(),
                         value: val.clone(),
                         children,
                         description: None,
+                        decoded_value: None,
+                        value_type: None,
                     });
                     i += 2;
                 } else {
@@ -105,7 +106,7 @@ pub fn parse_curl(input: &str) -> ParseResult {
     });
 
     // 解析 URL query params
-    let query_params = url_str.as_ref().and_then(|u| parse_query_params(u));
+    let query_params = url_str.as_ref().and_then(|u| parse_utils::parse_query_params(u));
 
     ParseResult {
         content_type: HttpContentType::Request,
@@ -124,13 +125,10 @@ pub fn parse_curl(input: &str) -> ParseResult {
 /// 去掉 `curl ` 前缀（支持 `curl` 后紧跟空格的情况）。
 fn strip_curl_prefix(s: &str) -> &str {
     let trimmed = s.trim_start();
-    if trimmed.starts_with("curl ") || trimmed.starts_with("curl\t") {
-        &trimmed[5..]
-    } else if trimmed == "curl" {
-        ""
-    } else {
-        trimmed
-    }
+    trimmed
+        .strip_prefix("curl ")
+        .or_else(|| trimmed.strip_prefix("curl\t"))
+        .unwrap_or(if trimmed == "curl" { "" } else { trimmed })
 }
 
 /// 合并反斜杠续行（`\` + 换行）为单行。
@@ -276,82 +274,16 @@ fn parse_header_token(header_str: &str) -> Option<ParseNode> {
     let key = key.trim().to_string();
     let value = value.trim().to_string();
 
-    let children = parse_header_value_children(&key, &value);
+    let children = parse_utils::parse_header_value_children(&key, &value);
 
     Some(ParseNode {
         key,
         value,
         children,
         description: None,
+        decoded_value: None,
+        value_type: None,
     })
-}
-
-/// Cookie 值按 `;` 拆解为 children（与 parser.rs 中的逻辑一致）。
-fn parse_cookie_children(cookie_str: &str) -> Option<Vec<ParseNode>> {
-    let children: Vec<ParseNode> = cookie_str
-        .split(';')
-        .map(|pair| pair.trim())
-        .filter(|pair| !pair.is_empty())
-        .map(|pair| {
-            if let Some((k, v)) = pair.split_once('=') {
-                ParseNode {
-                    key: k.trim().to_string(),
-                    value: v.trim().to_string(),
-                    children: None,
-                    description: None,
-                }
-            } else {
-                ParseNode {
-                    key: pair.to_string(),
-                    value: String::new(),
-                    children: None,
-                    description: None,
-                }
-            }
-        })
-        .collect();
-
-    if children.is_empty() {
-        None
-    } else {
-        Some(children)
-    }
-}
-
-/// Header value 子解析（用于 -H 传入的 Cookie header）。
-fn parse_header_value_children(key: &str, value: &str) -> Option<Vec<ParseNode>> {
-    let lower_key = key.to_lowercase();
-    if lower_key == "cookie" || lower_key == "set-cookie" {
-        parse_cookie_children(value)
-    } else {
-        None
-    }
-}
-
-/// 从 URL 字符串中解析查询参数。
-fn parse_query_params(url_str: &str) -> Option<Vec<ParseNode>> {
-    let parsed = Url::parse(url_str)
-        .or_else(|_| Url::parse(&format!("http://dummy{}", url_str)));
-
-    match parsed {
-        Ok(url) => {
-            let params: Vec<ParseNode> = url
-                .query_pairs()
-                .map(|(k, v)| ParseNode {
-                    key: k.into_owned(),
-                    value: v.into_owned(),
-                    children: None,
-                    description: None,
-                })
-                .collect();
-            if params.is_empty() {
-                None
-            } else {
-                Some(params)
-            }
-        }
-        Err(_) => None,
-    }
 }
 
 #[cfg(test)]
