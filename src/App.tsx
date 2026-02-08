@@ -2,11 +2,6 @@ import { useEffect } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from "@/components/ui/resizable";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppProvider, useApp } from "@/lib/app-context";
 import { Toolbar } from "@/components/toolbar/Toolbar";
@@ -98,21 +93,14 @@ function AppContent() {
         <div className="flex flex-col flex-1 min-h-0">
           <RequestSummaryStrip />
 
-          <div className="flex-1 min-h-0">
-            {hasSelection ? (
-              <ResizablePanelGroup orientation="horizontal">
-                <ResizablePanel defaultSize={65} minSize={40}>
-                  <ResultPanel />
-                </ResizablePanel>
-                <ResizableHandle />
-                <ResizablePanel defaultSize={35} minSize={20} maxSize={50}>
-                  <div className="animate-slide-in-right h-full">
-                    <DetailPanel />
-                  </div>
-                </ResizablePanel>
-              </ResizablePanelGroup>
-            ) : (
+          <div className="flex-1 min-h-0 flex">
+            <div className={hasSelection ? "w-[65%] h-full min-w-0" : "w-full h-full"}>
               <ResultPanel />
+            </div>
+            {hasSelection && (
+              <div className="w-[35%] h-full border-l border-border animate-slide-in-right overflow-hidden">
+                <DetailPanel />
+              </div>
             )}
           </div>
         </div>

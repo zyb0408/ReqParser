@@ -65,9 +65,11 @@ export function Toolbar() {
   };
 
   const handleToggleTheme = () => {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
+    // dark → light → system → dark
+    // Ensures first click from default dark always produces visible change
+    if (theme === "dark") setTheme("light");
+    else if (theme === "light") setTheme("system");
+    else setTheme("dark");
   };
 
   const hasResult = !!state.parseResult;
