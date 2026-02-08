@@ -40,7 +40,7 @@ export function TypeBadge({ type }: TypeBadgeProps) {
     <Badge
       variant="outline"
       className={cn(
-        "text-[10px] font-mono font-semibold px-1.5 py-0 h-4 rounded-sm border-none animate-in fade-in-0 zoom-in-95 duration-150",
+        "text-[10px] font-mono font-semibold px-1.5 py-0 h-[18px] rounded-sm border-none animate-in fade-in-0 zoom-in-95 duration-150 shadow-[inset_0_0_0_1px_oklch(1_0_0/8%)]",
         style.className
       )}
     >

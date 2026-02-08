@@ -3,7 +3,6 @@ import { useApp } from "@/lib/app-context";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
-import { Separator } from "@/components/ui/separator";
 import {
   Tooltip,
   TooltipContent,
@@ -71,60 +70,68 @@ export function Toolbar() {
     else setTheme("light");
   };
 
+  const hasResult = !!state.parseResult;
+
   return (
-    <div className="flex items-center h-12 px-4 border-b border-border bg-background">
+    <div className="flex items-center h-10 px-3 border-b border-border bg-card/80 backdrop-blur-sm drag-region">
       {/* Brand */}
-      <div className="flex items-center gap-2">
-        <Terminal className="h-4 w-4" />
+      <div className="flex items-center gap-2 no-drag">
+        <div className="flex items-center justify-center w-6 h-6 rounded-md bg-primary/10">
+          <Terminal className="h-3.5 w-3.5 text-primary" />
+        </div>
         <span className="text-sm font-semibold">ReqParser</span>
-        <span className="text-xs text-muted-foreground hidden min-[1000px]:inline">v0.1.0</span>
       </div>
 
-      <Separator orientation="vertical" className="h-6 mx-3" />
+      <div className="w-3" />
 
-      {/* Actions */}
-      <div className="flex items-center gap-1">
+      {/* Actions — only show parse-related buttons when there's a result */}
+      <div className="flex items-center gap-0.5 no-drag">
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" onClick={handlePaste}>
-              <ClipboardPaste className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handlePaste}>
+              <ClipboardPaste className="h-3.5 w-3.5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent>粘贴 (Cmd+V)</TooltipContent>
         </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button variant="outline" size="sm" onClick={handleClear}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>清空</TooltipContent>
-        </Tooltip>
+        {hasResult && (
+          <>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={handleClear}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>清空</TooltipContent>
+            </Tooltip>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="sm"
-              onClick={() => handleParse()}
-              disabled={state.parseState === "parsing" || !state.rawText.trim()}
-            >
-              {state.parseState === "parsing" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="h-4 w-4" />
-              )}
-              <span className="ml-1">解析</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>解析 (Cmd+Enter)</TooltipContent>
-        </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7"
+                  onClick={() => handleParse()}
+                  disabled={state.parseState === "parsing" || !state.rawText.trim()}
+                >
+                  {state.parseState === "parsing" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Play className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>重新解析 (Cmd+Enter)</TooltipContent>
+            </Tooltip>
+          </>
+        )}
       </div>
 
       <div className="flex-1" />
 
       {/* Toggles */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-0.5 no-drag">
         <Tooltip>
           <TooltipTrigger asChild>
             <Toggle
@@ -132,11 +139,12 @@ export function Toolbar() {
               pressed={state.clipboardWatching}
               onPressedChange={handleToggleClipboard}
               aria-label="剪贴板监听"
+              className="h-7 w-7 p-0"
             >
               {state.clipboardWatching ? (
-                <ClipboardCheck className="h-4 w-4" />
+                <ClipboardCheck className="h-3.5 w-3.5" />
               ) : (
-                <ClipboardList className="h-4 w-4" />
+                <ClipboardList className="h-3.5 w-3.5" />
               )}
             </Toggle>
           </TooltipTrigger>
@@ -150,11 +158,12 @@ export function Toolbar() {
               pressed={state.privacyMask}
               onPressedChange={() => dispatch({ type: "TOGGLE_PRIVACY_MASK" })}
               aria-label="隐私脱敏"
+              className="h-7 w-7 p-0"
             >
               {state.privacyMask ? (
-                <EyeOff className="h-4 w-4" />
+                <EyeOff className="h-3.5 w-3.5" />
               ) : (
-                <Eye className="h-4 w-4" />
+                <Eye className="h-3.5 w-3.5" />
               )}
             </Toggle>
           </TooltipTrigger>
@@ -168,11 +177,12 @@ export function Toolbar() {
               pressed={resolvedTheme === "dark"}
               onPressedChange={handleToggleTheme}
               aria-label="主题切换"
+              className="h-7 w-7 p-0"
             >
               {resolvedTheme === "dark" ? (
-                <Moon className="h-4 w-4" />
+                <Moon className="h-3.5 w-3.5" />
               ) : (
-                <Sun className="h-4 w-4" />
+                <Sun className="h-3.5 w-3.5" />
               )}
             </Toggle>
           </TooltipTrigger>

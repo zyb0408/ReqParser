@@ -11,7 +11,8 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppProvider, useApp } from "@/lib/app-context";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { StatusBar } from "@/components/layout/StatusBar";
-import { InputPanel } from "@/components/panels/InputPanel";
+import { IdleView } from "@/components/panels/IdleView";
+import { RequestSummaryStrip } from "@/components/panels/RequestSummaryStrip";
 import { ResultPanel } from "@/components/kv/ResultPanel";
 import { DetailPanel } from "@/components/detail/DetailPanel";
 import type { ParseResult } from "@/types";
@@ -82,38 +83,46 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, [state.parseError, dispatch]);
 
+  const hasResult = !!state.parseResult;
+  const hasSelection = !!state.selectedNode;
+
   return (
     <div className="flex flex-col h-screen">
       <Toolbar />
 
-      <div className="flex-1 min-h-0">
-        <ResizablePanelGroup orientation="horizontal">
-          {/* Left: Input Panel */}
-          <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
-            <InputPanel />
-          </ResizablePanel>
+      {!hasResult ? (
+        /* Idle: full-screen centered input */
+        <IdleView />
+      ) : (
+        /* Has result: summary strip + result panel (+ optional detail) */
+        <div className="flex flex-col flex-1 min-h-0">
+          <RequestSummaryStrip />
 
-          <ResizableHandle withHandle />
-
-          {/* Middle: KV Tree / Result Panel */}
-          <ResizablePanel defaultSize={50} minSize={30}>
-            <ResultPanel />
-          </ResizablePanel>
-
-          <ResizableHandle withHandle />
-
-          {/* Right: Detail Panel */}
-          <ResizablePanel defaultSize={25} minSize={15} maxSize={35}>
-            <DetailPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+          <div className="flex-1 min-h-0">
+            {hasSelection ? (
+              <ResizablePanelGroup orientation="horizontal">
+                <ResizablePanel defaultSize={65} minSize={40}>
+                  <ResultPanel />
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel defaultSize={35} minSize={20} maxSize={50}>
+                  <div className="animate-slide-in-right h-full">
+                    <DetailPanel />
+                  </div>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            ) : (
+              <ResultPanel />
+            )}
+          </div>
+        </div>
+      )}
 
       <StatusBar />
 
       {/* Error toast */}
       {state.parseError && (
-        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-destructive text-destructive-foreground px-4 py-2 rounded-md text-sm shadow-lg animate-in fade-in-0 slide-in-from-bottom-4">
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-destructive text-destructive-foreground px-4 py-2 rounded-lg text-sm shadow-2xl animate-fade-up">
           {state.parseError}
         </div>
       )}

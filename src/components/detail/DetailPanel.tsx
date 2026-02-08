@@ -13,7 +13,6 @@ import {
   ChevronRight,
   AlertTriangle,
   ExternalLink,
-  MousePointer,
   Info,
   Shield,
   Code2,
@@ -38,15 +37,7 @@ export function DetailPanel() {
   const { state, dispatch } = useApp();
   const { selectedNode, selectedPath } = state;
 
-  if (!selectedNode) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-16">
-        <MousePointer className="h-10 w-10 mb-4 opacity-30" />
-        <p className="text-sm">点击左侧表格中的任意行</p>
-        <p className="text-xs mt-1">查看字段详细信息</p>
-      </div>
-    );
-  }
+  if (!selectedNode) return null;
 
   const headerInfo = getHeaderInfo(selectedNode.key);
   const advisories = getSecurityAdvisoriesForHeader(selectedNode.key);
@@ -77,9 +68,12 @@ export function DetailPanel() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Amber gradient top line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+
       {/* Header */}
-      <div className="flex items-start justify-between p-3 border-b border-border">
-        <div className="min-w-0">
+      <div className="relative flex items-start p-3 border-b border-border">
+        <div className="min-w-0 pr-8">
           <h3 className="text-lg font-semibold truncate">{selectedNode.key}</h3>
           <div className="flex items-center gap-2 mt-1">
             {headerInfo?.category && (
@@ -99,7 +93,12 @@ export function DetailPanel() {
             </p>
           )}
         </div>
-        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={handleClose}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-2 right-2 h-6 w-6 shrink-0"
+          onClick={handleClose}
+        >
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -108,7 +107,7 @@ export function DetailPanel() {
         <div className="p-3 space-y-4">
           {/* Value */}
           <DetailSection title="当前值" icon={<Code2 className="h-4 w-4" />} defaultOpen>
-            <div className="bg-muted rounded-md p-3 font-mono text-xs break-all overflow-auto max-h-32">
+            <div className="bg-muted rounded-md p-3 font-mono text-xs break-all overflow-auto max-h-32 border border-border/50">
               {selectedNode.value}
             </div>
           </DetailSection>
@@ -134,7 +133,7 @@ export function DetailPanel() {
           {/* Decoded content */}
           {decodedDisplay && (
             <DetailSection title="解码内容" icon={<Code2 className="h-4 w-4" />} defaultOpen>
-              <pre className="bg-muted rounded-md p-3 font-mono text-xs overflow-auto max-h-64 whitespace-pre-wrap">
+              <pre className="bg-muted rounded-md p-3 font-mono text-xs overflow-auto max-h-64 whitespace-pre-wrap border border-border/50">
                 {decodedDisplay}
               </pre>
             </DetailSection>

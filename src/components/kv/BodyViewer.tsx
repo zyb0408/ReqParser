@@ -93,15 +93,21 @@ function highlightJson(jsonStr: string): React.ReactNode[] {
   return lines.map((line, i) => {
     const tokens = tokenizeLine(line);
     return (
-      <div key={i} className="leading-relaxed">
-        {tokens.map((token, j) => {
-          const cls = tokenClassMap[token.type];
-          return cls ? (
-            <span key={j} className={cls}>{token.text}</span>
-          ) : (
-            <span key={j}>{token.text}</span>
-          );
-        })}
+      <div key={i} className="group/line flex leading-relaxed hover:bg-accent/20 transition-colors">
+        {/* Line number gutter */}
+        <span className="inline-block w-8 shrink-0 text-right pr-3 select-none text-[var(--text-dimmed)]">
+          {i + 1}
+        </span>
+        <span className="flex-1">
+          {tokens.map((token, j) => {
+            const cls = tokenClassMap[token.type];
+            return cls ? (
+              <span key={j} className={cls}>{token.text}</span>
+            ) : (
+              <span key={j}>{token.text}</span>
+            );
+          })}
+        </span>
       </div>
     );
   });
@@ -125,7 +131,7 @@ export function BodyViewer({ body }: BodyViewerProps) {
         {isJson ? (
           <code>{highlightJson(formatted)}</code>
         ) : (
-          <code>{formatted}</code>
+          <code className="whitespace-pre-wrap">{formatted}</code>
         )}
       </pre>
     </ScrollArea>

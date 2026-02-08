@@ -8,10 +8,10 @@ export function StatusBar() {
     : 0;
 
   return (
-    <div className="flex items-center h-7 px-4 text-xs text-muted-foreground bg-muted/30 border-t border-border gap-4">
+    <div className="flex items-center h-6 px-4 text-[11px] text-muted-foreground bg-card/50 backdrop-blur-sm border-t border-border gap-4">
       <div className="flex items-center gap-1.5">
         <span
-          className="inline-block w-2 h-2 rounded-full"
+          className={`inline-block w-2 h-2 rounded-full ${state.clipboardWatching ? "animate-subtle-pulse" : ""}`}
           style={{
             backgroundColor: state.clipboardWatching
               ? "var(--status-active)"
@@ -22,17 +22,11 @@ export function StatusBar() {
       </div>
 
       {state.parseTime !== null && (
-        <>
-          <span className="text-border">|</span>
-          <span>解析: {state.parseTime}ms</span>
-        </>
+        <span>解析: {state.parseTime}ms</span>
       )}
 
       {state.parseResult && (
-        <>
-          <span className="text-border">|</span>
-          <span>共 {itemCount} 个字段</span>
-        </>
+        <span>共 {itemCount} 个字段</span>
       )}
 
       <div className="flex-1" />

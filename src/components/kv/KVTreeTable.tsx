@@ -144,10 +144,10 @@ function TreeRow({
     <>
       <div
         className={cn(
-          "group flex items-center h-9 px-3 border-b border-border/50 transition-colors duration-75 cursor-pointer",
+          "group flex items-center h-9 px-3 border-b border-border/30 transition-colors duration-75 cursor-pointer border-l-2",
           isSelected
-            ? "bg-accent border-l-2 border-l-primary"
-            : "hover:bg-accent/50"
+            ? "bg-primary/8 border-l-primary"
+            : "hover:bg-accent/40 border-l-transparent"
         )}
         onClick={() => onSelectNode(node, currentPath)}
       >
@@ -240,7 +240,7 @@ function TreeRow({
         </div>
 
         {/* Actions */}
-        <div className="w-20 shrink-0 flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-100">
+        <div className="w-20 shrink-0 flex items-center justify-end gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
           <Button
             variant="ghost"
             size="icon"
@@ -251,7 +251,7 @@ function TreeRow({
             }}
           >
             {copiedKey ? (
-              <Check className="h-3 w-3 text-green-500" />
+              <Check className="h-3 w-3 text-[var(--status-active)]" />
             ) : (
               <Copy className="h-3 w-3" />
             )}
@@ -266,7 +266,7 @@ function TreeRow({
             }}
           >
             {copiedValue ? (
-              <Check className="h-3 w-3 text-green-500" />
+              <Check className="h-3 w-3 text-[var(--status-active)]" />
             ) : (
               <Copy className="h-3 w-3" />
             )}
