@@ -19,7 +19,8 @@
       "Bash(npx vite build:*)",
       "Bash(pnpm run build:*)",
       "Bash(pnpm build:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(wc:*)"
     ]
   }
 }

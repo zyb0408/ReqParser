@@ -21,3 +21,19 @@ export interface ParseResult {
   body?: string;
   rawText: string;
 }
+
+export interface HistoryEntrySummary {
+  id: string;
+  title: string;
+  method?: string;
+  url?: string;
+  createdAt: string;
+}
+
+export interface HistoryEntry {
+  id: string;
+  title: string;
+  rawText: string;
+  parseResult: ParseResult;
+  createdAt: string;
+}

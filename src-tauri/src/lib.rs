@@ -4,6 +4,7 @@ mod decoder;
 mod detector;
 mod error;
 mod fetch_parser;
+mod history;
 mod models;
 mod parse_utils;
 mod parser;
@@ -74,6 +75,12 @@ pub fn run() {
             check_http_like,
             toggle_clipboard_watcher,
             get_clipboard_watcher_status,
+            history::history_save,
+            history::history_list,
+            history::history_get,
+            history::history_rename,
+            history::history_delete,
+            history::history_clear,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

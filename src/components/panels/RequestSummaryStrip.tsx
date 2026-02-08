@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useApp } from "@/lib/app-context";
-import { invoke } from "@tauri-apps/api/core";
+import { useParse } from "@/lib/use-parse";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -9,10 +9,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Code2, X, ChevronUp, Play, Loader2 } from "lucide-react";
-import type { ParseResult } from "@/types";
 
 export function RequestSummaryStrip() {
   const { state, dispatch } = useApp();
+  const { parse } = useParse();
   const [showRaw, setShowRaw] = useState(false);
   const { parseResult, parseTime, rawText } = state;
 
@@ -20,19 +20,6 @@ export function RequestSummaryStrip() {
 
   const handleClear = () => {
     dispatch({ type: "CLEAR_ALL" });
-  };
-
-  const handleReparse = async () => {
-    if (!rawText.trim()) return;
-    dispatch({ type: "PARSE_START" });
-    const start = performance.now();
-    try {
-      const result = await invoke<ParseResult>("parse_text", { rawText });
-      const time = Math.round(performance.now() - start);
-      dispatch({ type: "PARSE_SUCCESS", payload: result, time });
-    } catch (e) {
-      dispatch({ type: "PARSE_ERROR", payload: String(e) });
-    }
   };
 
   const displayUrl = parseResult.url
@@ -107,7 +94,7 @@ export function RequestSummaryStrip() {
               size="sm"
               variant="ghost"
               className="h-6 px-2 text-xs"
-              onClick={handleReparse}
+              onClick={() => parse()}
               disabled={state.parseState === "parsing" || !rawText.trim()}
             >
               {state.parseState === "parsing" ? (

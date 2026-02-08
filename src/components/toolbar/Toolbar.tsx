@@ -1,5 +1,6 @@
 import { useTheme } from "@/components/ThemeProvider";
 import { useApp } from "@/lib/app-context";
+import { useParse } from "@/lib/use-parse";
 import { invoke } from "@tauri-apps/api/core";
 import { Button } from "@/components/ui/button";
 import { Toggle } from "@/components/ui/toggle";
@@ -20,18 +21,19 @@ import {
   Sun,
   Moon,
   Terminal,
+  History,
 } from "lucide-react";
-import type { ParseResult } from "@/types";
 
 export function Toolbar() {
   const { state, dispatch } = useApp();
+  const { parse } = useParse();
   const { theme, setTheme, resolvedTheme } = useTheme();
 
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       dispatch({ type: "SET_RAW_TEXT", payload: text });
-      handleParse(text);
+      parse(text);
     } catch {
       // clipboard read failed silently
     }
@@ -39,20 +41,6 @@ export function Toolbar() {
 
   const handleClear = () => {
     dispatch({ type: "CLEAR_ALL" });
-  };
-
-  const handleParse = async (text?: string) => {
-    const raw = text ?? state.rawText;
-    if (!raw.trim()) return;
-    dispatch({ type: "PARSE_START" });
-    const start = performance.now();
-    try {
-      const result = await invoke<ParseResult>("parse_text", { rawText: raw });
-      const time = Math.round(performance.now() - start);
-      dispatch({ type: "PARSE_SUCCESS", payload: result, time });
-    } catch (e) {
-      dispatch({ type: "PARSE_ERROR", payload: String(e) });
-    }
   };
 
   const handleToggleClipboard = async () => {
@@ -65,8 +53,6 @@ export function Toolbar() {
   };
 
   const handleToggleTheme = () => {
-    // dark → light → system → dark
-    // Ensures first click from default dark always produces visible change
     if (theme === "dark") setTheme("light");
     else if (theme === "light") setTheme("system");
     else setTheme("dark");
@@ -86,7 +72,7 @@ export function Toolbar() {
 
       <div className="w-3" />
 
-      {/* Actions — only show parse-related buttons when there's a result */}
+      {/* Actions */}
       <div className="flex items-center gap-0.5 no-drag">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -95,6 +81,20 @@ export function Toolbar() {
             </Button>
           </TooltipTrigger>
           <TooltipContent>粘贴 (Cmd+V)</TooltipContent>
+        </Tooltip>
+
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`h-7 w-7 ${state.historyOpen ? "bg-accent" : ""}`}
+              onClick={() => dispatch({ type: "TOGGLE_HISTORY" })}
+            >
+              <History className="h-3.5 w-3.5" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>历史记录</TooltipContent>
         </Tooltip>
 
         {hasResult && (
@@ -114,7 +114,7 @@ export function Toolbar() {
                   variant="ghost"
                   size="icon"
                   className="h-7 w-7"
-                  onClick={() => handleParse()}
+                  onClick={() => parse()}
                   disabled={state.parseState === "parsing" || !state.rawText.trim()}
                 >
                   {state.parseState === "parsing" ? (

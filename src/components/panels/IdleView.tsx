@@ -1,8 +1,11 @@
-import { useApp } from "@/lib/app-context";
 import { invoke } from "@tauri-apps/api/core";
+import { useApp } from "@/lib/app-context";
+import { useParse } from "@/lib/use-parse";
+import { formatRelativeTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Play, Loader2, Terminal } from "lucide-react";
-import type { ParseResult } from "@/types";
+import { Badge } from "@/components/ui/badge";
+import { Play, Loader2, Terminal, ChevronRight } from "lucide-react";
+import type { HistoryEntry } from "@/types";
 
 const PLACEHOLDER = `GET /api/v1/users?page=1&limit=20 HTTP/1.1
 Host: api.example.com
@@ -12,39 +15,35 @@ Accept: application/json`;
 
 export function IdleView() {
   const { state, dispatch } = useApp();
-
-  const handleParse = async () => {
-    if (!state.rawText.trim()) return;
-    dispatch({ type: "PARSE_START" });
-    const start = performance.now();
-    try {
-      const result = await invoke<ParseResult>("parse_text", { rawText: state.rawText });
-      const time = Math.round(performance.now() - start);
-      dispatch({ type: "PARSE_SUCCESS", payload: result, time });
-    } catch (e) {
-      dispatch({ type: "PARSE_ERROR", payload: String(e) });
-    }
-  };
+  const { parse } = useParse();
 
   const handlePaste = async () => {
     try {
       const text = await navigator.clipboard.readText();
       if (!text.trim()) return;
       dispatch({ type: "SET_RAW_TEXT", payload: text });
-      // Auto-parse after paste
-      dispatch({ type: "PARSE_START" });
-      const start = performance.now();
-      const result = await invoke<ParseResult>("parse_text", { rawText: text });
-      const time = Math.round(performance.now() - start);
-      dispatch({ type: "PARSE_SUCCESS", payload: result, time });
+      parse(text);
     } catch {
       // clipboard read failed
+    }
+  };
+
+  const handleLoadHistory = async (id: string) => {
+    try {
+      const entry = await invoke<HistoryEntry>("history_get", { id });
+      dispatch({
+        type: "LOAD_FROM_HISTORY",
+        payload: { rawText: entry.rawText, parseResult: entry.parseResult },
+      });
+    } catch {
+      // load failed
     }
   };
 
   const lineCount = state.rawText ? state.rawText.split("\n").length : 0;
   const hasText = state.rawText.trim().length > 0;
   const isParsing = state.parseState === "parsing";
+  const recentHistory = state.historyList.slice(0, 5);
 
   return (
     <div className="flex flex-col items-center justify-center flex-1 px-6 animate-fade-up">
@@ -91,7 +90,7 @@ export function IdleView() {
           <Button
             size="sm"
             className="h-9 px-4"
-            onClick={handleParse}
+            onClick={() => parse()}
             disabled={isParsing}
           >
             {isParsing ? (
@@ -103,6 +102,44 @@ export function IdleView() {
           </Button>
         )}
       </div>
+
+      {/* Recent history */}
+      {recentHistory.length > 0 && !state.historyOpen && (
+        <div className="w-full max-w-3xl mt-8">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-xs font-medium text-muted-foreground">最近解析</span>
+            <button
+              className="flex items-center gap-0.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => dispatch({ type: "TOGGLE_HISTORY" })}
+            >
+              查看全部
+              <ChevronRight className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="rounded-lg border border-border/50 bg-card/50 divide-y divide-border/50">
+            {recentHistory.map((entry) => (
+              <button
+                key={entry.id}
+                className="w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-muted/50 transition-colors first:rounded-t-lg last:rounded-b-lg"
+                onClick={() => handleLoadHistory(entry.id)}
+              >
+                {entry.method && (
+                  <Badge
+                    variant="secondary"
+                    className="shrink-0 font-mono text-[10px] font-semibold bg-primary/10 text-primary border-none"
+                  >
+                    {entry.method}
+                  </Badge>
+                )}
+                <span className="text-sm truncate flex-1 min-w-0">{entry.title}</span>
+                <span className="text-[11px] text-muted-foreground shrink-0">
+                  {formatRelativeTime(entry.createdAt)}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

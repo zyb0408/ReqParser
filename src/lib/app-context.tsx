@@ -1,5 +1,5 @@
 import { createContext, useContext, useReducer, type ReactNode } from "react";
-import type { ParseNode, ParseResult } from "@/types";
+import type { HistoryEntrySummary, ParseNode, ParseResult } from "@/types";
 
 export interface AppState {
   rawText: string;
@@ -13,6 +13,8 @@ export interface AppState {
   alwaysOnTop: boolean;
   privacyMask: boolean;
   detailPanelOpen: boolean;
+  historyList: HistoryEntrySummary[];
+  historyOpen: boolean;
 }
 
 export type AppAction =
@@ -27,7 +29,10 @@ export type AppAction =
   | { type: "TOGGLE_PRIVACY_MASK" }
   | { type: "TOGGLE_DETAIL_PANEL" }
   | { type: "CLEAR_ERROR" }
-  | { type: "CLEAR_ALL" };
+  | { type: "CLEAR_ALL" }
+  | { type: "SET_HISTORY_LIST"; payload: HistoryEntrySummary[] }
+  | { type: "TOGGLE_HISTORY" }
+  | { type: "LOAD_FROM_HISTORY"; payload: { rawText: string; parseResult: ParseResult } };
 
 const initialState: AppState = {
   rawText: "",
@@ -41,6 +46,8 @@ const initialState: AppState = {
   alwaysOnTop: false,
   privacyMask: false,
   detailPanelOpen: false,
+  historyList: [],
+  historyOpen: false,
 };
 
 function reducer(state: AppState, action: AppAction): AppState {
@@ -95,6 +102,24 @@ function reducer(state: AppState, action: AppAction): AppState {
         clipboardWatching: state.clipboardWatching,
         alwaysOnTop: state.alwaysOnTop,
         privacyMask: state.privacyMask,
+        historyList: state.historyList,
+      };
+    case "SET_HISTORY_LIST":
+      return { ...state, historyList: action.payload };
+    case "TOGGLE_HISTORY":
+      return { ...state, historyOpen: !state.historyOpen };
+    case "LOAD_FROM_HISTORY":
+      return {
+        ...state,
+        rawText: action.payload.rawText,
+        parseResult: action.payload.parseResult,
+        parseState: "done",
+        parseError: null,
+        parseTime: null,
+        selectedNode: null,
+        selectedPath: [],
+        detailPanelOpen: false,
+        historyOpen: false,
       };
     default:
       return state;

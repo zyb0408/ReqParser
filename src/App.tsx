@@ -1,40 +1,38 @@
 import { useEffect } from "react";
-import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { AppProvider, useApp } from "@/lib/app-context";
+import { useParse } from "@/lib/use-parse";
 import { Toolbar } from "@/components/toolbar/Toolbar";
 import { StatusBar } from "@/components/layout/StatusBar";
 import { IdleView } from "@/components/panels/IdleView";
 import { RequestSummaryStrip } from "@/components/panels/RequestSummaryStrip";
 import { ResultPanel } from "@/components/kv/ResultPanel";
 import { DetailPanel } from "@/components/detail/DetailPanel";
-import type { ParseResult } from "@/types";
+import { HistoryList } from "@/components/history/HistoryList";
 
 function AppContent() {
   const { state, dispatch } = useApp();
+  const { parse, refreshHistory } = useParse();
+
+  // Load history on startup
+  useEffect(() => {
+    refreshHistory();
+  }, [refreshHistory]);
 
   // Listen for clipboard HTTP detection events
   useEffect(() => {
-    const unlisten = listen<string>("clipboard-http-detected", async (event) => {
+    const unlisten = listen<string>("clipboard-http-detected", (event) => {
       const text = event.payload;
       dispatch({ type: "SET_RAW_TEXT", payload: text });
-      dispatch({ type: "PARSE_START" });
-      const start = performance.now();
-      try {
-        const result = await invoke<ParseResult>("parse_text", { rawText: text });
-        const time = Math.round(performance.now() - start);
-        dispatch({ type: "PARSE_SUCCESS", payload: result, time });
-      } catch (e) {
-        dispatch({ type: "PARSE_ERROR", payload: String(e) });
-      }
+      parse(text);
     });
 
     return () => {
       unlisten.then((fn) => fn());
     };
-  }, [dispatch]);
+  }, [dispatch, parse]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -44,30 +42,22 @@ function AppContent() {
       if (isMeta && e.key === "Enter") {
         e.preventDefault();
         if (state.rawText.trim()) {
-          (async () => {
-            dispatch({ type: "PARSE_START" });
-            const start = performance.now();
-            try {
-              const result = await invoke<ParseResult>("parse_text", {
-                rawText: state.rawText,
-              });
-              const time = Math.round(performance.now() - start);
-              dispatch({ type: "PARSE_SUCCESS", payload: result, time });
-            } catch (err) {
-              dispatch({ type: "PARSE_ERROR", payload: String(err) });
-            }
-          })();
+          parse();
         }
       }
 
       if (e.key === "Escape") {
-        dispatch({ type: "CLEAR_SELECTION" });
+        if (state.historyOpen) {
+          dispatch({ type: "TOGGLE_HISTORY" });
+        } else {
+          dispatch({ type: "CLEAR_SELECTION" });
+        }
       }
     };
 
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [state.rawText, dispatch]);
+  }, [state.rawText, state.historyOpen, dispatch, parse]);
 
   // Auto-dismiss error toast
   useEffect(() => {
@@ -85,11 +75,11 @@ function AppContent() {
     <div className="flex flex-col h-screen">
       <Toolbar />
 
-      {!hasResult ? (
-        /* Idle: full-screen centered input */
+      {!hasResult && state.historyOpen ? (
+        <HistoryList />
+      ) : !hasResult ? (
         <IdleView />
       ) : (
-        /* Has result: summary strip + result panel (+ optional detail) */
         <div className="flex flex-col flex-1 min-h-0">
           <RequestSummaryStrip />
 
