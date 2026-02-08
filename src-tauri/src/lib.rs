@@ -1,6 +1,8 @@
 mod clipboard;
+mod curl_parser;
 mod detector;
 mod error;
+mod fetch_parser;
 mod models;
 mod parser;
 
@@ -10,16 +12,23 @@ use std::sync::Arc;
 use tauri::State;
 
 use clipboard::ClipboardWatcherState;
+use detector::InputFormat;
 use error::AppError;
 use models::ParseResult;
 
-/// 解析 HTTP 文本，返回结构化结果。
+/// 解析 HTTP 文本，自动检测输入格式（cURL / fetch / 原始 HTTP）。
 #[tauri::command]
 fn parse_text(raw_text: String) -> Result<ParseResult, AppError> {
     if raw_text.trim().is_empty() {
         return Err(AppError::ParseError("Input text is empty".to_string()));
     }
-    Ok(parser::parse_http_text(&raw_text))
+    let result = match detector::detect_input_format(&raw_text) {
+        InputFormat::Curl => curl_parser::parse_curl(&raw_text),
+        InputFormat::Fetch => fetch_parser::parse_fetch(&raw_text),
+        InputFormat::RawHttp => parser::parse_http_text(&raw_text),
+        InputFormat::Unknown => parser::parse_http_text(&raw_text),
+    };
+    Ok(result)
 }
 
 /// 检测文本是否像 HTTP 数据。
